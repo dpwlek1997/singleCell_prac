@@ -1,19 +1,27 @@
 # This script had been generated for ArchRtoSignac with more varaible Matrixes not just peakMatrix and GeneScoreMatrix.
 # Such as geneExpressionMatrix, tileMatrix and other matrixes. The codes were modifed from https://github.com/swaruplabUCI/ArchRtoSignac/blob/main/R/ArchRtoSignac.R. 
 
-# Install and load packages
+#############################
+# Install and load packages #
+#############################
 devtools::install_github("swaruplabUCI/ArchRtoSignac")
 packages <- c("ArchRtoSignac", "ArchR","Seurat", "Signac","stringr") # required packages
 loadinglibrary(packages)
 
-# Step 1: obtain ArchRproject peak matrix for object conversion
+#################################################################
+# Step 1: obtain ArchRproject peak matrix for object conversion #
+#################################################################
 pkm <- getPeakMatrix(proj)
 
-# Step 2: extract appropriate ensembl gene annotation -> UCSC style 
+#####################################################################
+# Step 2: extract appropriate ensembl gene annotation -> UCSC style #
+#####################################################################
 library(EnsDb.Hsapiens.v86)
 annotations <- getAnnotation(reference = EnsDb.Hsapiens.v86, refversion = "hg38")
 
-# Step 3: convert ArchRproejct to Signac SeuratObject
+#######################################################
+# Step 3: convert ArchRproejct to Signac SeuratObject #
+#######################################################
 ## peak added
 fragments_dir <- "../multiome/fragments/"
 seurat_object <- ArchR2Signac(  # modified ArchR2Signac function a bit, please refer line ___. 
@@ -26,12 +34,13 @@ seurat_object <- ArchR2Signac(  # modified ArchR2Signac function a bit, please r
 )
 seurat_object
 
-
-# Step 4: add other matrix 
-## Here, multiome data was used. So ArchRproject has GeneExprssionMatirx, GeneScoreMatrix, GeneIngtegrationMatrix.
-# GeneExpressionMatirx: gene expression from snRNAseq of multiome
-# GeneScoreMatrix: assumed gene expression based on chromatin accessibility from snATACseq of multiome
-# GeneIntegrationMatrix: 
+##############################
+# Step 4: add other matrixes #
+############################## 
+# Here, multiome data was used. So ArchRproject has GeneExprssionMatirx, GeneScoreMatrix, GeneIngtegrationMatrix.
+## GeneExpressionMatirx: gene expression from snRNAseq of multiome
+## GeneScoreMatrix: assumed gene expression based on chromatin accessibility from snATACseq of multiome
+## GeneIntegrationMatrix: 
 
 get_another_Matrix <- function(ArchRProject, SeuratObject, matrix_name){     # modified of getGeneScoreMatrix() in ArchRtoSignac
   matrix <- ArchR::getMatrixFromProject(ArchRProject, useMatrix=matrix_name)
@@ -66,13 +75,14 @@ seurat_object[['RNA']] <- CreateAssayObject(counts = assay_GeneExpressionMatrix)
 seurat_object[["integrated"]] <- CreateAssayObject(counts = assay_GeneIntegrationMatrix) #  20397 
 seurat_object[['genescore']] <- CreateAssayObject(counts = gsm)
 
+###################################
+# Step 5: add dimension reduction #
+###################################
 
-# Step 5: add dimension reduction 
 
 
 
-
-# modified ArchR2Signac 
+# modified ArchR2Signac #
 ArchR2Signac <- function(
   ArchRProject,
   refversion, # write the EnsDb version
